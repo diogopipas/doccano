@@ -41,3 +41,62 @@ class UserCreation(generics.CreateAPIView):
     def perform_create(self, serializer):
         user = serializer.save(self.request)
         return user
+
+
+from rest_framework.generics import DestroyAPIView, UpdateAPIView
+
+class UserDeletion(DestroyAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated & IsAdminUser]
+    lookup_field = 'id'
+
+    def delete(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('id')  # Pega o ID diretamente da URL
+        if not user_id:
+            return Response({"error": "ID do usuário não fornecido"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=user_id)
+            username = user.username
+            user.delete()
+            return Response({"success": f"Usuário {username} excluído com sucesso"}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Erro ao excluir usuário: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UserUpdate(UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated & IsAdminUser]
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('id')
+        if not user_id:
+            return Response({"error": "ID do usuário não fornecido"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=user_id)
+            
+            # Atualizar nome de usuário se fornecido
+            if 'username' in request.data:
+                user.username = request.data['username']
+            
+            # Atualizar status de administrador se fornecido
+            if 'is_staff' in request.data:
+                user.is_staff = request.data['is_staff']
+            
+            # Atualizar senha se fornecida
+            if 'password1' in request.data and 'password2' in request.data:
+                if request.data['password1'] != request.data['password2']:
+                    return Response({"error": "As senhas não coincidem"}, status=status.HTTP_400_BAD_REQUEST)
+                user.set_password(request.data['password1'])
+            
+            user.save()
+            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Erro ao atualizar usuário: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

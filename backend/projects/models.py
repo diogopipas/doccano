@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Manager
 from polymorphic.models import PolymorphicModel
+from polymorphic.managers import PolymorphicManager
 
 from roles.models import Role
 
@@ -27,6 +28,7 @@ class ProjectType(models.TextChoices):
 class Project(PolymorphicModel):
     name = models.CharField(max_length=100)
     description = models.TextField(default="")
+    
     guideline = models.TextField(default="", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -40,6 +42,7 @@ class Project(PolymorphicModel):
     collaborative_annotation = models.BooleanField(default=False)
     single_class_classification = models.BooleanField(default=False)
     allow_member_to_create_label_type = models.BooleanField(default=False)
+    objects = PolymorphicManager()
 
     def add_admin(self):
         admin_role = Role.objects.get(name=settings.ROLE_PROJECT_ADMIN)
@@ -61,7 +64,8 @@ class Project(PolymorphicModel):
         Returns:
             The cloned project.
         """
-        project = Project.objects.get(pk=self.pk)
+        project = self
+
         project.pk = None
         project.id = None
         project._state.adding = True

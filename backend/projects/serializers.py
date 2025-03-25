@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from rest_polymorphic.serializers import PolymorphicSerializer
+from drf_polymorphic.serializers import PolymorphicSerializer
+
 
 from .models import (
     BoundingBoxProject,
@@ -142,7 +143,15 @@ class ImageCaptioningProjectSerializer(ProjectSerializer):
 
 
 class ProjectPolymorphicSerializer(PolymorphicSerializer):
-    model_serializer_mapping = {
-        Project: ProjectSerializer,
-        **{cls.Meta.model: cls for cls in ProjectSerializer.__subclasses__()},
+    serializer_mapping = {
+        TextClassificationProject: TextClassificationProjectSerializer,
+        SequenceLabelingProject: SequenceLabelingProjectSerializer,
+        Seq2seqProject: Seq2seqProjectSerializer,
+        IntentDetectionAndSlotFillingProject: IntentDetectionAndSlotFillingProjectSerializer,
+        Speech2textProject: Speech2textProjectSerializer,
+        ImageClassificationProject: ImageClassificationProjectSerializer,
+        BoundingBoxProject: BoundingBoxProjectSerializer,
+        SegmentationProject: SegmentationProjectSerializer,
+        ImageCaptioningProject: ImageCaptioningProjectSerializer,
     }
+

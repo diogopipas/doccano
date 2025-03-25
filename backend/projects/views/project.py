@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from projects.models import Project
 from projects.permissions import IsProjectAdmin, IsProjectStaffAndReadOnly
 from projects.serializers import ProjectPolymorphicSerializer
+from polymorphic.query import PolymorphicQuerySet
 
 
 class ProjectList(generics.ListCreateAPIView):
@@ -28,7 +29,8 @@ class ProjectList(generics.ListCreateAPIView):
         return super().get_permissions()
 
     def get_queryset(self):
-        return Project.objects.filter(role_mappings__user=self.request.user)
+        return Project.objects.instance_of(Project).filter(role_mappings__user=self.request.user)
+
 
     def perform_create(self, serializer):
         project = serializer.save(created_by=self.request.user)

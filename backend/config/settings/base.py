@@ -71,20 +71,63 @@ INSTALLED_APPS = [
     "health_check.contrib.migrations",
     "health_check.contrib.celery",
     "django_cleanup",
+    "drf_polymorphic",
 ]
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3010", "http://localhost:3010", "http://127.0.0.1:8100", "http://localhost:8100"]
+CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+CORS_ALLOW_HEADERS = ['*']
+SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", False)
+
+# CSRF and Auth logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.security.csrf': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'corsheaders.middleware.CorsMiddleware': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.contrib.auth': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.contrib.sessions': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 
 ROOT_URLCONF = "config.urls"
@@ -224,17 +267,21 @@ if DATABASES["default"].get("ENGINE") == "sql_server.pyodbc":
 # Sessions and CSRF
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", False)
 CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", False)
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", [])
 
 # Allow all host headers
 ALLOWED_HOSTS = ["*"]
 
-if DEBUG:
-    CORS_ORIGIN_ALLOW_ALL = True
-    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "http://0.0.0.0:3000", "http://localhost:3000"]
-    CSRF_TRUSTED_ORIGINS += env.list("CSRF_TRUSTED_ORIGINS", [])
+# Unified CORS settings
+CORS_ORIGIN_ALLOW_ALL = False  # Changed from True to be consistent with earlier setting
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3010", "http://localhost:3010", "http://127.0.0.1:8100", "http://localhost:8100"]
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3010", "http://localhost:3010", "http://127.0.0.1:8100", "http://localhost:8100"]
+CSRF_TRUSTED_ORIGINS += env.list("CSRF_TRUSTED_ORIGINS", [])
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = None
 
 # Batch size for importing data
 IMPORT_BATCH_SIZE = env.int("IMPORT_BATCH_SIZE", 1000)

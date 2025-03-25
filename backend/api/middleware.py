@@ -3,6 +3,10 @@ import os
 from django.conf import settings
 from django.contrib.auth.middleware import RemoteUserMiddleware
 from django.utils.deprecation import MiddlewareMixin
+from django.utils.functional import SimpleLazyObject
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class RangesMiddleware(MiddlewareMixin):
@@ -45,11 +49,33 @@ class HeaderAuthMiddleware(RemoteUserMiddleware):
     header = to_django_header(settings.HEADER_AUTH_USER_NAME)
 
     def process_request(self, request):
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Log request context
+        logger.info(f"[Auth Flow] Request method: {request.method}, Path: {request.path}")
+        logger.info(f"[Auth Flow] CSRF Token: {request.META.get('CSRF_COOKIE')}, Session ID: {request.session.session_key}")
+        
+        # Log all authentication related headers
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        logger.info(f"[Auth Flow] Authorization header: {auth_header}")
+        logger.info(f"[Auth Flow] Custom auth header ({self.header}): {request.META.get(self.header)}")
+        
+        # Log CSRF related information
+        csrf_token = request.META.get('CSRF_COOKIE')
+        csrf_header = request.META.get('HTTP_X_CSRFTOKEN')
+        csrf_middleware_token = request.META.get('CSRF_COOKIE_USED')
+        logger.info(f"[Auth Flow] CSRF validation - Cookie Token: {csrf_token}, Header Token: {csrf_header}, Middleware Token: {csrf_middleware_token}")
+        logger.info(f"[Auth Flow] Request Headers: {dict(request.headers)}")
+        
+        # Log current authentication state
         if request.user.is_authenticated:
+            logger.info(f"[Auth Flow] User already authenticated as {request.user.username}")
             return
 
         username = request.META.get(self.header)
         if not username:
+            logger.warning(f"No username found in header {self.header}")
             return
 
         super().process_request(request)

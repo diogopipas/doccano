@@ -22,7 +22,8 @@ export default {
   },
 
   server: {
-    host: '0.0.0.0' // default: localhost
+    host: '0.0.0.0', // default: localhost
+    port: 3010 // explicitly set port to match CORS configuration
   },
 
   env: {
@@ -104,10 +105,10 @@ export default {
   proxy: {
     // Use a fake value for use at build-time
     '/v1/': {
-      target: process.env.API_URL || 'http://127.0.0.1:8000'
+      target: process.env.API_URL || 'http://127.0.0.1:8100'
     },
     '/media': {
-      target: process.env.API_URL || 'http://127.0.0.1:8000'
+      target: process.env.API_URL || 'http://127.0.0.1:8100'
     }
   },
   /*
