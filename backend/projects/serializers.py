@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from drf_polymorphic.serializers import PolymorphicSerializer
+from projects.models import ProjectType  # Ensure this is correct
 
 
 from .models import (
@@ -142,16 +143,19 @@ class ImageCaptioningProjectSerializer(ProjectSerializer):
         model = ImageCaptioningProject
 
 
-class ProjectPolymorphicSerializer(PolymorphicSerializer):
+class ProjectPolymorphicSerializer(ProjectSerializer, PolymorphicSerializer):
+    discriminator_field = "project_type"
     serializer_mapping = {
-        TextClassificationProject: TextClassificationProjectSerializer,
-        SequenceLabelingProject: SequenceLabelingProjectSerializer,
-        Seq2seqProject: Seq2seqProjectSerializer,
-        IntentDetectionAndSlotFillingProject: IntentDetectionAndSlotFillingProjectSerializer,
-        Speech2textProject: Speech2textProjectSerializer,
-        ImageClassificationProject: ImageClassificationProjectSerializer,
-        BoundingBoxProject: BoundingBoxProjectSerializer,
-        SegmentationProject: SegmentationProjectSerializer,
-        ImageCaptioningProject: ImageCaptioningProjectSerializer,
+        ProjectType.DOCUMENT_CLASSIFICATION: TextClassificationProjectSerializer,  # Ensure this mapping exists
+        ProjectType.SEQUENCE_LABELING: SequenceLabelingProjectSerializer,
+        ProjectType.SEQ2SEQ: Seq2seqProjectSerializer,
+        ProjectType.INTENT_DETECTION_AND_SLOT_FILLING: IntentDetectionAndSlotFillingProjectSerializer,
+        ProjectType.SPEECH2TEXT: Speech2textProjectSerializer,
+        ProjectType.IMAGE_CLASSIFICATION: ImageClassificationProjectSerializer,
+        ProjectType.BOUNDING_BOX: BoundingBoxProjectSerializer,
+        ProjectType.SEGMENTATION: SegmentationProjectSerializer,
+        ProjectType.IMAGE_CAPTIONING: ImageCaptioningProjectSerializer,
     }
+
+
 

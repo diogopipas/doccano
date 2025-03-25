@@ -63,9 +63,13 @@ def import_dataset(user_id, project_id, file_format: str, upload_ids: List[str],
         dataset.save(user, batch_size=settings.IMPORT_BATCH_SIZE)
         upload_to_store(temporary_uploads)
         errors.extend(dataset.errors)
-        return {"error": [e.dict() for e in errors]}
+
+        # ✅ Ensure a valid response is always returned
+        return {"status": "SUCCESS", "error": [e.dict() for e in errors]} if not errors else {"status": "FAILED", "error": [e.dict() for e in errors]}
+
     except FileImportException as e:
-        return {"error": [e.dict()]}
+        return {"status": "FAILED", "error": [e.dict()]}
+
 
 
 def upload_to_store(temporary_uploads):

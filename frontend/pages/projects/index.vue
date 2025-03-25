@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <v-card-title v-if="isStaff">
+    <v-card-title v-if="$store.getters['auth/isStaff']">
       <v-btn class="text-capitalize" color="primary" @click.stop="$router.push('projects/create')">
         {{ $t('generic.create') }}
       </v-btn>

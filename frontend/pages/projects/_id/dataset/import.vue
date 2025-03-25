@@ -235,16 +235,24 @@ export default {
       }
     },
     async importDataset() {
-      this.isImporting = true
-      const item = this.catalog.find((item) => item.displayName === this.selected)
-      this.taskId = await this.$repositories.parse.analyze(
-        this.$route.params.id,
-        item.name,
-        item.taskId,
-        this.uploadedFiles.map((item) => item.serverId),
-        this.option
-      )
-    },
+  this.isImporting = true;
+  const item = this.catalog.find((item) => item.displayName === this.selected);
+  
+  try {
+    this.taskId = await this.$repositories.parse.analyze(
+      this.$route.params.id,
+      item.name,
+      item.taskId,
+      this.uploadedFiles.map((item) => item.serverId),
+      this.option
+    );
+    console.log("Task started successfully:", this.taskId);
+  } catch (error) {
+    console.error("Error starting import task:", error);
+    this.isImporting = false;
+  }
+},
+
     pollData() {
       this.polling = setInterval(async () => {
         if (this.taskId) {

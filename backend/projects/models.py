@@ -110,6 +110,7 @@ class Project(PolymorphicModel):
         return self.name
 
 
+
 class TextClassificationProject(Project):
     @property
     def is_text_project(self) -> bool:
